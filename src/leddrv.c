@@ -89,34 +89,34 @@ static void gpio_bank_apply(pinbank_t *bank)
 	GPIO_Pin_##pinnr_ \
 }
 
-static const pindesc_t led_pins[LED_PINCOUNT] = {
-	PINDESC(A, 15), // A
-	PINDESC(B, 18), // B
-	PINDESC(B, 0),  // C
-	PINDESC(B, 7),  // D
-	PINDESC(A, 12), // E
-	PINDESC(A, 10), // F
-	PINDESC(A, 11), // G
-	PINDESC(B, 9),  // H
-	PINDESC(B, 8),  // I
-	PINDESC(B, 15), // J
-	PINDESC(B, 14), // K
-	PINDESC(B, 13), // L
-	PINDESC(B, 12), // M
-	PINDESC(B, 5),  // N
-	PINDESC(A, 4),  // O
-	PINDESC(B, 3),  // P
-	PINDESC(B, 4),  // Q
-	PINDESC(B, 2),  // R
-	PINDESC(B, 1),  // S
+static const pinctrl_t led_pins[LED_PINCOUNT] = {
+	PINCTRL(A, 15), // A 
+	PINCTRL(B, 18), // B
+	PINCTRL(B, 0),  // C
+	PINCTRL(B, 7),  // D
+	PINCTRL(A, 12), // E
+	PINCTRL(A, 10), // F
+	PINCTRL(A, 11), // G
+	PINCTRL(B, 9),  // H
+	PINCTRL(B, 8),  // I
+	PINCTRL(B, 15), // J
+	PINCTRL(B, 14), // K
+	PINCTRL(B, 13), // L
+	PINCTRL(B, 12), // M
+	PINCTRL(B, 5),  // N
+	PINCTRL(A, 4),  // O
+	PINCTRL(B, 3),  // P
+	PINCTRL(B, 4),  // Q
+	PINCTRL(B, 2),  // R
+	PINCTRL(B, 1),  // S
 #ifdef USBC_VERSION
-	PINDESC(B, 6), // T
+	PINCTRL(B, 6), // T
 #else
-	PINDESC(B, 23), // T
+	PINCTRL(B, 23), // T
 #endif
-	PINDESC(B, 21), // U
-	PINDESC(B, 20), // V
-	PINDESC(B, 19), // W
+	PINCTRL(B, 21), // U
+	PINCTRL(B, 20), // V
+	PINCTRL(B, 19), // W
 };
 
 void led_init()
