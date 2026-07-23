@@ -89,34 +89,31 @@ static void gpio_bank_apply(pinbank_t *bank)
 	GPIO_Pin_##pinnr_ \
 }
 
-static const pinctrl_t led_pins[LED_PINCOUNT] = {
-	PINCTRL(A, 15), // A 
-	PINCTRL(B, 18), // B
-	PINCTRL(B, 0),  // C
-	PINCTRL(B, 7),  // D
-	PINCTRL(A, 12), // E
-	PINCTRL(A, 10), // F
-	PINCTRL(A, 11), // G
-	PINCTRL(B, 9),  // H
-	PINCTRL(B, 8),  // I
-	PINCTRL(B, 15), // J
-	PINCTRL(B, 14), // K
-	PINCTRL(B, 13), // L
-	PINCTRL(B, 12), // M
-	PINCTRL(B, 5),  // N
-	PINCTRL(A, 4),  // O
-	PINCTRL(B, 3),  // P
-	PINCTRL(B, 4),  // Q
-	PINCTRL(B, 2),  // R
-	PINCTRL(B, 1),  // S
-#ifdef USBC_VERSION
-	PINCTRL(B, 6), // T
-#else
-	PINCTRL(B, 23), // T
-#endif
-	PINCTRL(B, 21), // U
-	PINCTRL(B, 20), // V
-	PINCTRL(B, 19), // W
+// HARDCODED REV 2 PIN MAPPING
+static const pindesc_t led_pins[LED_PINCOUNT] = {
+	PINDESC(A, 15), // 0
+	PINDESC(B, 18), // 1
+	PINDESC(B, 0),  // 2
+	PINDESC(B, 7),  // 3
+	PINDESC(A, 12), // 4
+	PINDESC(A, 10), // 5
+	PINDESC(A, 11), // 6
+	PINDESC(B, 9),  // 7
+	PINDESC(B, 8),  // 8
+	PINDESC(B, 15), // 9  (Pin J)
+	PINDESC(B, 14), // 10 (Pin K)
+	PINDESC(B, 13), // 11
+	PINDESC(B, 12), // 12
+	PINDESC(B, 5),  // 13
+	PINDESC(A, 4),  // 14
+	PINDESC(B, 3),  // 15
+	PINDESC(B, 4),  // 16
+	PINDESC(B, 2),  // 17
+	PINDESC(B, 1),  // 18
+	PINDESC(B, 23), // 19 (Pin T)
+	PINDESC(B, 21), // 20
+	PINDESC(B, 20), // 21
+	PINDESC(B, 19), // 22
 };
 
 void led_init()
@@ -137,13 +134,14 @@ void leds_releaseall() {
 	GPIO_APPLY_ALL();
 }
 
+// REVERTED SAFE SCANNING METHOD
 static void led_write2dcol_raw(int dcol, uint32_t val)
 {
-	int on_count;
+	int on_count = 0;
 	int pin_value;
 
 	gpio_pin_set(led_pins + dcol, HIGH);
-	on_count = 0;
+	
 	for (int i=0; i<LED_PINCOUNT; i++) {
 		if (i == dcol) continue;
 		pin_value = FLOATING;
@@ -154,9 +152,11 @@ static void led_write2dcol_raw(int dcol, uint32_t val)
 		gpio_pin_set(led_pins + i, pin_value);
 		val >>= 1;
 	}
+	
 	g_pindrive_strong = 0x00000000;
 	if (on_count > 5)
 		g_pindrive_strong = 0xFFFFFFFF;
+		
 	GPIO_APPLY_ALL();
 }
 
@@ -188,14 +188,15 @@ void led_write2dcol(int dcol, uint16_t col1_val, uint16_t col2_val)
 	led_write2dcol_raw(dcol, combine_cols(col1_val, col2_val));
 }
 
+// REVERTED SAFE SCANNING METHOD
 void led_write2row_raw(int row, int which_half, uint32_t val)
 {
-	int on_count;
+	int on_count = 0;
 	int pin_value;
 
 	row = row*2 + (which_half != 0);
 	gpio_pin_set(led_pins + row, LOW);
-	on_count = 0;
+	
 	for (int i=0; i<LED_PINCOUNT; i++) {
 		if (i == row) continue;
 		pin_value = FLOATING;
@@ -206,8 +207,10 @@ void led_write2row_raw(int row, int which_half, uint32_t val)
 		gpio_pin_set(led_pins + i, pin_value);
 		val >>= 1;
 	}
+	
 	g_pindrive_strong = 0x00000000;
 	if (on_count > 5)
 		g_pindrive_strong = 0xFFFFFFFF;
+		
 	GPIO_APPLY_ALL();
 }
