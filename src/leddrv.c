@@ -89,27 +89,26 @@ static void gpio_bank_apply(pinbank_t *bank)
 	GPIO_Pin_##pinnr_ \
 }
 
-
 static const pindesc_t led_pins[LED_PINCOUNT] = {
 	PINDESC(A, 15), // A
 	PINDESC(B, 18), // B
-	PINDESC(B, 0),  // C
-	PINDESC(B, 7),  // D
+	PINDESC(B, 0),  // C
+	PINDESC(B, 7),  // D
 	PINDESC(A, 12), // E
 	PINDESC(A, 10), // F
 	PINDESC(A, 11), // G
-	PINDESC(B, 9),  // H
-	PINDESC(B, 8),  // I
+	PINDESC(B, 9),  // H
+	PINDESC(B, 8),  // I
 	PINDESC(B, 15), // J
 	PINDESC(B, 14), // K
 	PINDESC(B, 13), // L
 	PINDESC(B, 12), // M
-	PINDESC(B, 5),  // N
-	PINDESC(A, 4),  // O
-	PINDESC(B, 3),  // P
-	PINDESC(B, 4),  // Q
-	PINDESC(B, 2),  // R
-	PINDESC(B, 1),  // S
+	PINDESC(B, 5),  // N
+	PINDESC(A, 4),  // O
+	PINDESC(B, 3),  // P
+	PINDESC(B, 4),  // Q
+	PINDESC(B, 2),  // R
+	PINDESC(B, 1),  // S
 #ifdef USBC_VERSION
 	PINDESC(B, 6), // T
 #else
