@@ -30,6 +30,7 @@ static struct pinbanks {
 	pinbank_t B;
 } g_PinBanks;
 
+
 static void gpio_pin_set(const pindesc_t *desc, tristate_t state)
 {
 	switch(state) {
@@ -84,6 +85,7 @@ static void gpio_bank_apply(pinbank_t *bank)
 	gpio_bank_apply(&g_PinBanks.B); \
 } while (0)
 
+
 #define PINDESC(bank_, pinnr_) { \
 	&g_PinBanks.bank_ , \
 	GPIO_Pin_##pinnr_ \
@@ -99,8 +101,13 @@ static const pindesc_t led_pins[LED_PINCOUNT] = {
 	PINDESC(A, 11), // G
 	PINDESC(B, 9),  // H
 	PINDESC(B, 8),  // I
+#ifdef HARDWARE_REV3
+	PINDESC(B, 17), // J
+	PINDESC(B, 16), // K
+#else
 	PINDESC(B, 15), // J
 	PINDESC(B, 14), // K
+#endif
 	PINDESC(B, 13), // L
 	PINDESC(B, 12), // M
 	PINDESC(B, 5),  // N
@@ -109,7 +116,7 @@ static const pindesc_t led_pins[LED_PINCOUNT] = {
 	PINDESC(B, 4),  // Q
 	PINDESC(B, 2),  // R
 	PINDESC(B, 1),  // S
-#ifdef USBC_VERSION
+#ifdef HARDWARE_REV3
 	PINDESC(B, 6), // T
 #else
 	PINDESC(B, 23), // T
