@@ -30,7 +30,6 @@ static struct pinbanks {
 	pinbank_t B;
 } g_PinBanks;
 
-
 static void gpio_pin_set(const pindesc_t *desc, tristate_t state)
 {
 	switch(state) {
@@ -85,7 +84,6 @@ static void gpio_bank_apply(pinbank_t *bank)
 	gpio_bank_apply(&g_PinBanks.B); \
 } while (0)
 
-
 #define PINDESC(bank_, pinnr_) { \
 	&g_PinBanks.bank_ , \
 	GPIO_Pin_##pinnr_ \
@@ -101,16 +99,11 @@ static const pindesc_t led_pins[LED_PINCOUNT] = {
 	PINDESC(A, 11), // G
 	PINDESC(B, 9),  // H
 	PINDESC(B, 8),  // I
-  PINDESC(B, 8),  // I
 #ifdef HARDWARE_REV3
 	PINDESC(B, 17), // J
-#else
-	PINDESC(B, 15), // J
-	PINDESC(B, 14), // K
-#endif
-#ifdef HARDWARE_REV3
 	PINDESC(B, 16), // K
 #else
+	PINDESC(B, 15), // J
 	PINDESC(B, 14), // K
 #endif
 	PINDESC(B, 13), // L
@@ -122,7 +115,7 @@ static const pindesc_t led_pins[LED_PINCOUNT] = {
 	PINDESC(B, 2),  // R
 	PINDESC(B, 1),  // S
 #ifdef HARDWARE_REV3
-	PINDESC(B, 6), // T
+	PINDESC(B, 6),  // T
 #else
 	PINDESC(B, 23), // T
 #endif
@@ -149,57 +142,27 @@ void leds_releaseall() {
 	GPIO_APPLY_ALL();
 }
 
-//applies the calculated output and direction states to both banks
-static inline void led_apply_bank_states(uint32_t out_A, uint32_t dir_A, uint32_t out_B, uint32_t dir_B)
-{
-	gpio_bank_tristate(&g_PinBanks.A);
-	gpio_bank_tristate(&g_PinBanks.B);
-
-	g_PinBanks.A.out_val = (g_PinBanks.A.out_val & ~g_PinBanks.A.bankpins_mask) | out_A;
-	g_PinBanks.A.dir_val = (g_PinBanks.A.dir_val & ~g_PinBanks.A.bankpins_mask) | dir_A;
-	g_PinBanks.A.drv_val = (g_PinBanks.A.drv_val & ~g_PinBanks.A.bankpins_mask) | (g_pindrive_strong & dir_A);
-
-	g_PinBanks.B.out_val = (g_PinBanks.B.out_val & ~g_PinBanks.B.bankpins_mask) | out_B;
-	g_PinBanks.B.dir_val = (g_PinBanks.B.dir_val & ~g_PinBanks.B.bankpins_mask) | dir_B;
-	g_PinBanks.B.drv_val = (g_PinBanks.B.drv_val & ~g_PinBanks.B.bankpins_mask) | (g_pindrive_strong & dir_B);
-
-	gpio_bank_apply(&g_PinBanks.A);
-	gpio_bank_apply(&g_PinBanks.B);
-}
-
 static void led_write2dcol_raw(int dcol, uint32_t val)
 {
 	int on_count;
-	uint32_t out_A = 0, dir_A = 0;
-	uint32_t out_B = 0, dir_B = 0;
+	int pin_value;
 
-	if (led_pins[dcol].bank == &g_PinBanks.A) {
-		dir_A |= led_pins[dcol].pin_mask;
-		out_A |= led_pins[dcol].pin_mask;
-	} else {
-		dir_B |= led_pins[dcol].pin_mask;
-		out_B |= led_pins[dcol].pin_mask;
-	}
-
+	gpio_pin_set(led_pins + dcol, HIGH);
 	on_count = 0;
 	for (int i=0; i<LED_PINCOUNT; i++) {
 		if (i == dcol) continue;
+		pin_value = FLOATING;
 		if (val & 0x01) {
 			on_count++;
-			if (led_pins[i].bank == &g_PinBanks.A) {
-				dir_A |= led_pins[i].pin_mask;
-			} else {
-				dir_B |= led_pins[i].pin_mask;
-			}
+			pin_value = LOW; // pin LOW => LED on
 		}
+		gpio_pin_set(led_pins + i, pin_value);
 		val >>= 1;
 	}
-
 	g_pindrive_strong = 0x00000000;
 	if (on_count > 5)
 		g_pindrive_strong = 0xFFFFFFFF;
-
-	led_apply_bank_states(out_A, dir_A, out_B, dir_B);
+	GPIO_APPLY_ALL();
 }
 
 static uint32_t combine_cols(uint16_t col1_val, uint16_t col2_val)
@@ -233,36 +196,23 @@ void led_write2dcol(int dcol, uint16_t col1_val, uint16_t col2_val)
 void led_write2row_raw(int row, int which_half, uint32_t val)
 {
 	int on_count;
-	uint32_t out_A = 0, dir_A = 0;
-	uint32_t out_B = 0, dir_B = 0;
+	int pin_value;
 
 	row = row*2 + (which_half != 0);
-
-	if (led_pins[row].bank == &g_PinBanks.A) {
-		dir_A |= led_pins[row].pin_mask;
-	} else {
-		dir_B |= led_pins[row].pin_mask;
-	}
-
+	gpio_pin_set(led_pins + row, LOW);
 	on_count = 0;
 	for (int i=0; i<LED_PINCOUNT; i++) {
 		if (i == row) continue;
+		pin_value = FLOATING;
 		if (val & 0x01) {
 			on_count++;
-			if (led_pins[i].bank == &g_PinBanks.A) {
-				dir_A |= led_pins[i].pin_mask;
-				out_A |= led_pins[i].pin_mask;
-			} else {
-				dir_B |= led_pins[i].pin_mask;
-				out_B |= led_pins[i].pin_mask;
-			}
+			pin_value = HIGH;
 		}
+		gpio_pin_set(led_pins + i, pin_value);
 		val >>= 1;
 	}
-
 	g_pindrive_strong = 0x00000000;
 	if (on_count > 5)
 		g_pindrive_strong = 0xFFFFFFFF;
-
-	led_apply_bank_states(out_A, dir_A, out_B, dir_B);
+	GPIO_APPLY_ALL();
 }
